@@ -136,7 +136,9 @@ services:
         - 'celery --app airflow.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}"'
       interval: 10s
       timeout: 10s
-      retries: 5
+      retries: 10
+    ports:
+      - 8793:8793
     environment:
       <<: *airflow-common-env
       # Required to handle warm shutdown of the celery workers properly
@@ -227,6 +229,14 @@ services:
         fi
         mkdir -p /sources/logs /sources/dags /sources/plugins
         chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
+        airflow db init
+        airflow users create \
+        --username admin \
+        --firstname Peter \
+        --lastname Parker \
+        --role Admin \
+        --email spiderman@superhero.org \
+        --password admin
         # exec /entrypoint airflow version
     # yamllint enable rule:line-length
     environment:

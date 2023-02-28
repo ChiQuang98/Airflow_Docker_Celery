@@ -84,4 +84,4 @@ USER airflow
 WORKDIR ${AIRFLOW_USER_HOME}
 # RUN pip install -r requirements.txt
 ENTRYPOINT ["/entrypoint.sh"]
-# CMD ["webserver"] 
+CMD ["webserver"] 
