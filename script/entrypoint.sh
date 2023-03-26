@@ -18,7 +18,7 @@ TRY_LOOP="20"
 
 # Defaults and back-compat
 : "${AIRFLOW_HOME:="/opt/airflow"}"
-: "${AIRFLOW__CORE__FERNET_KEY:=${FERNET_KEY:=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)")}}"
+: "${AIRFLOW__CORE__FERNET_KEY:=${FERNET_KEY:="b4m0fzRIJZZak7YxBSH5sRNWkuUYFVF6e5_9qdngebc="}}"
 : "${AIRFLOW__CORE__EXECUTOR:=${EXECUTOR:-Celery}Executor}"
 # CeleryExecutor
 export \

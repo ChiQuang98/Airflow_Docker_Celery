@@ -22,7 +22,7 @@ with DAG(
     populate_pet_table = PostgresOperator(
     task_id="populate_pet_table",
     postgres_conn_id="postgres_default",
-    sql="sql/pet_schema.sql",
+    sql="sql/insert.sql",
     )
     get_all_pets = PostgresOperator(
     task_id="get_all_pets",
@@ -30,3 +30,4 @@ with DAG(
     sql="SELECT * FROM pet;",
     )
     create_pet_table >> populate_pet_table >> get_all_pets
+    # >> populate_pet_table >> get_all_pets
