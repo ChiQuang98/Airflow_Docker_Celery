@@ -3,7 +3,7 @@
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t chiquang98/docker-airflow .
 
-FROM python:3.8-slim-buster
+FROM python:3.9-slim-buster
 LABEL maintainer="chiquang98__"
 
 # Never prompt the user for choices on installation/configuration of packages
@@ -38,9 +38,10 @@ RUN set -ex \
     libffi-dev \
     libpq-dev \
     git \
-    ' \
-    && apt-get update -yqq \
-    && apt-get upgrade -yqq \
+    ' 
+RUN  apt-get clean
+RUN apt-get update -y 
+RUN apt-get upgrade -yqq \
     && apt-get install -yqq --no-install-recommends \
     && apt-get install -y gosu \
     $buildDeps \
@@ -52,15 +53,19 @@ RUN set -ex \
     rsync \
     netcat \
     locales \
+    iputils-ping \
+    telnet \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
-    && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow \
-    && pip install -U pip setuptools wheel \
+    && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow
+RUN apt-get install libsasl2-dev
+RUN pip install -U pip setuptools wheel \
     && pip install pytz \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
+    && pip install pyspark==3.2.3 \
     && pip install --no-cache-dir apache-airflow-providers-apache-spark \
     && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
     && pip install -U celery[redis] \
@@ -77,7 +82,6 @@ RUN set -ex \
     /usr/share/doc \
     /usr/share/doc-base
 #Sua loi py4j.py4jexception: constructor org.apache.spark.sql.sparksession([class org.apache.spark.sparkcontext, class java.util.hashmap]) does not exist
-#RUN pip install pyspark==3.2.3
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
@@ -88,44 +92,18 @@ EXPOSE 8080 5555 8793
 
 # Java is required in order to spark-submit work
 # Install OpenJDK-8
-RUN set -ex \
-    && buildDeps=' \
-        freetds-dev \
-        libkrb5-dev \
-        libsasl2-dev \
-        libssl-dev \
-        libffi-dev \
-        libpq-dev \
-        git \
-    ' \
-    && apt-get update -yqq \
-    && apt-get upgrade -yqq \
-    && apt-get install -yqq --no-install-recommends \
-        $buildDeps \
-        freetds-bin \
-        build-essential \
-        default-libmysqlclient-dev \
-        apt-utils \
-        curl \
-        rsync \
-        netcat \
-        locales \
-        iputils-ping \
-        telnet
 #Sua loi E: Unable to locate package openjdk-8-jdk 
 RUN mkdir -p /usr/share/man/man1
 RUN apt-get update 
 RUN apt-get install -y software-properties-common
 RUN apt-get install -y gnupg2
-#Dung wifi cua mobifone khong get duoc key => fix ??
-# RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB9B1D8886F44E2A
 RUN add-apt-repository "deb http://security.debian.org/debian-security stretch/updates main"
 RUN apt-get update
 RUN apt-get install -y openjdk-8-jdk && \
     java -version $$ \
     javac -version
-RUN apt-get install libkrb5-dev -y
-RUN pip install krbcontext==0.10
+# RUN apt-get install libkrb5-dev -y
+# RUN pip install krbcontext==0.10
 
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 RUN export JAVA_HOME
