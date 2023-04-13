@@ -3,7 +3,7 @@
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t chiquang98/docker-airflow .
 
-FROM python:3.9-slim-buster
+FROM python:3.7-slim-buster
 LABEL maintainer="chiquang98__"
 
 # Never prompt the user for choices on installation/configuration of packages
@@ -53,24 +53,22 @@ RUN apt-get upgrade -yqq \
     rsync \
     netcat \
     locales \
-    iputils-ping \
-    telnet \
+    # iputils-ping \
+    # telnet \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow
+#Fix loi cai dat sasl
 RUN apt-get install libsasl2-dev
 RUN pip install -U pip setuptools wheel \
     && pip install pytz \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-<<<<<<< HEAD
-    && pip install pandas \
-=======
+#Fix loi py4j
     && pip install pyspark==3.2.3 \
     && pip install --no-cache-dir apache-airflow-providers-apache-spark \
->>>>>>> 1994b9a75aa9b86e6cbb6edd0fba83848ca23e59
     && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
     && pip install -U celery[redis] \
     && pip install importlib-metadata==4.13.0 \
@@ -85,8 +83,6 @@ RUN pip install -U pip setuptools wheel \
     /usr/share/man \
     /usr/share/doc \
     /usr/share/doc-base
-#Sua loi py4j.py4jexception: constructor org.apache.spark.sql.sparksession([class org.apache.spark.sparkcontext, class java.util.hashmap]) does not exist
-
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
 # COPY requirements.txt ${AIRFLOW_USER_HOME}/requirements.txt
